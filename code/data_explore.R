@@ -23,4 +23,40 @@ dim(all_mass)
 # convert Chamber to character for graphical purposes
 all_mass_long$Chamber <- as.character(all_mass_long$Chamber)
 
+# Make plot looking at biomass change over time (by species)
+# not sure if this is the best way to visualize
+all_mass_long %>% filter(biomass_m2 > -1) %>%  # filter out missing data
+  # y = biomass, x= year, color by species
+  ggplot(aes(x = Year, y = biomass_m2, color = Treatment)) +
+  # plot as line graph, add trendline
+  geom_point() + geom_smooth(method = "lm", se = FALSE) +
+  # facet by species
+  facet_wrap(vars(species))
+
+# find average biomass per species/treatment/community/year
+all_mass_long %>% 
+  # group by year, community, treatment, species
+  group_by(Year, Community, Treatment, species) %>% 
+  # calculate mean
+  summarize(mean_bm = mean(biomass_m2)) -> all_mass_avg
+
+# plot MX community over time
+# filter by community, also filter out missing values
+all_mass_avg %>% filter(Community == "MX") %>% filter(mean_bm > -1) %>% 
+  # plot biomass over time, color by species
+  ggplot(aes(x = Year, y = mean_bm, color = species)) +
+  # plot as scatter plot, facet by treatment
+  geom_point() + facet_wrap(vars(Treatment)) + 
+  # add trend lines
+  geom_smooth(method = "lm", se = FALSE)
+
+# same plot as above, but with all communities
+# easier to see using Zoom; 
+all_mass_avg %>% filter(mean_bm > -1) %>%  # filter out missing values
+  # plot biomass over time, color by species
+  ggplot(aes(x = Year, y = mean_bm, color = species)) +
+  # plot as scatter plot, facet by treatment
+  geom_point() + facet_wrap(vars(Treatment, Community)) + 
+  # add trend lines
+  geom_smooth(method = "lm", se = FALSE)
 
