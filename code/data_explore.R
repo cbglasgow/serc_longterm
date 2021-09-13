@@ -55,8 +55,42 @@ all_mass_avg %>% filter(Community == "MX") %>% filter(mean_bm > -1) %>%
 all_mass_avg %>% filter(mean_bm > -1) %>%  # filter out missing values
   # plot biomass over time, color by species
   ggplot(aes(x = Year, y = mean_bm, color = species)) +
-  # plot as scatter plot, facet by treatment
+  # plot as scatter plot, facet by treatment and community
   geom_point() + facet_wrap(vars(Treatment, Community)) + 
   # add trend lines
   geom_smooth(method = "lm", se = FALSE)
+
+# now look at densities
+all_mass %>% 
+  # select densities
+  select(Year:Chamber, SCdensity_m2, SPdensity_m2, DIdensity_m2, OTHERdensity_m2) %>% 
+  # Reformat data from wide to long so that species is in one column
+  gather(key = species, value = density_m2, SCdensity_m2:OTHERdensity_m2) -> all_density_long
+
+# plot densities over time 
+all_density_long %>%   
+  # y = density, x= year, color by species
+  ggplot(aes(x = Year, y = density_m2, color = Treatment)) +
+  # plot as line graph, add trendline
+  geom_point() + geom_smooth(method = "lm", se = FALSE) +
+  # facet by species
+  facet_wrap(vars(species))
+
+# find average density per species/treatment/community/year
+all_density_long %>% 
+  # group by year, community, treatment, species
+  group_by(Year, Community, Treatment, species) %>% 
+  # calculate mean
+  summarize(mean_density = mean(density_m2)) -> all_density_avg
+
+# plot mean density over time per community and treatment
+all_density_avg %>%  
+  # plot density over time, color by species
+  ggplot(aes(x = Year, y = mean_density, color = species)) +
+  # plot as scatter plot, facet by treatment and community
+  geom_point() + facet_wrap(vars(Treatment, Community)) + 
+  # add trend lines
+  geom_smooth(method = "lm", se = FALSE)
+
+
 
