@@ -20,3 +20,7 @@ all_mass %>%
 # Making a change to the code!!!
 dim(all_mass)
 
+# convert Chamber to character for graphical purposes
+all_mass_long$Chamber <- as.character(all_mass_long$Chamber)
+
+
